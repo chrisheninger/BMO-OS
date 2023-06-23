@@ -2,4 +2,4 @@
 Name=screensaver
 Type=Application
 Comment=runs the screensaver
-Exec="/home/pi/BMO/screensaver.sh"
+Exec="/home/bmo/code/screensaver.sh"
