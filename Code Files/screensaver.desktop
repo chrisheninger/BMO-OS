@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=screensaver
-Type=Application
-Comment=runs the screensaver
-Exec="/home/bmo/code/screensaver.sh"

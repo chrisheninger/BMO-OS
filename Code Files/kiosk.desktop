@@ -1,3 +1,0 @@
-[Desktop Entry]
-Exec=/usr/bin/chromium-browser --noerrdialogs --disable-infobars --kiosk  http://bmoctoprint.local &
-
