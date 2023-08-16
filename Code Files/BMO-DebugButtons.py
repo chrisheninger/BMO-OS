@@ -6,13 +6,13 @@ GPIO.setmode(GPIO.BCM)  # Use BCM pin numbering
 
 # Define the pin numbers
 buttons = {
-    17: "b1 (up)",
-    27: "b2 (right)",
-    22: "b3 (down)",
-    23: "b4 (left)",
-    24: "b5 (triangle)",
-    25: "b6 (small circle)",
-    26: "b7 (large circle)"
+    17: "up",
+    27: "right",
+    22: "down",
+    23: "left",
+    24: "triangle",
+    25: "small circle",
+    26: "large circle"
 }
 
 # Function to generate callback functions
