@@ -9,6 +9,7 @@ import subprocess
 class App:
     def __init__(self):
         self.vlc_process = None  # subprocess reference
+        self.game_running = False  # subprocess reference
 
         self.root = tk.Tk()
         self.root.attributes('-fullscreen', True)
@@ -39,7 +40,7 @@ class App:
 
         # Create a label for the OS version
         self.os_label = tk.Label(
-            self.root, text="BMO-OS v1.0", bg='#AFFCB7', font=self.os_label_font)
+            self.root, text="BMO-OS v1.1", bg='#AFFCB7', font=self.os_label_font)
         # Placed in new row and aligned to southwest
         self.os_label.grid(column=0, row=2, sticky="sw", padx=(32, 0), pady=16)
 
@@ -85,12 +86,12 @@ class App:
             '/home/bmo/animations/') if f.endswith('.mp4')]
 
         self.menus = {
-            'Main': {'items': ['Screensaver', 'Video Player', 'Settings', 'Exit'], 'parent': None},
+            'Main': {'items': ['BMO\'s Pro Skater Game', 'Screensaver', 'Video Player', 'Settings', 'Exit'], 'parent': None},
             'Video Player': {'items': video_files, 'parent': 'Main'},
             'Settings': {'items': ['Setting One', 'Setting Two', 'Setting Three', 'Setting Four', 'Setting Five', 'Setting Six', 'Setting Seven', 'Setting Eight'], 'parent': 'Main'},
         }
         self.current_menu = 'Main'
-        self.current_selection = 'Screensaver'
+        self.current_selection = 'BMO\'s Pro Skater Game'
 
         self.update_menu()
 
@@ -106,6 +107,8 @@ class App:
         GPIO.add_event_detect(
             26, GPIO.FALLING, callback=self.on_select, bouncetime=200)
 
+        # Start the periodic check
+        self.root.after(1000, self.check_game_status)
         self.root.mainloop()
 
         GPIO.cleanup()
@@ -126,8 +129,12 @@ class App:
             self.current_selection = self.treeview.item(first_id)['text']
 
     def on_up(self, channel):
+        if self.game_running:  # Ignore input if game is running
+            return
+
         cur_item = self.treeview.focus()
         prev_item = self.treeview.prev(cur_item)
+
         if prev_item:
             self.treeview.selection_set(prev_item)
             self.treeview.focus(prev_item)
@@ -140,6 +147,9 @@ class App:
                 self.treeview.see(prev_item)
 
     def on_down(self, channel):
+        if self.game_running:  # Ignore input if game is running
+            return
+
         cur_item = self.treeview.focus()
         next_item = self.treeview.next(cur_item)
 
@@ -150,6 +160,9 @@ class App:
             self.treeview.see(next_item)
 
     def on_select(self, channel):
+        if self.game_running:  # Ignore input if game is running
+            return
+
         selected = self.treeview.item(self.treeview.focus())['text']
         print('Selected:', selected)
 
@@ -160,12 +173,16 @@ class App:
         elif selected == 'Screensaver':
             self.vlc_process = subprocess.Popen(['vlc', '--fullscreen', '--loop', '--no-video-title-show',
                                                  '/home/bmo/animations/BMO_IdleLoop.mp4'])
+        elif selected == 'BMO\'s Pro Skater Game':  # Check if BMO\'s Pro Skater Game is selected
+            self.game_running = True  # Set the flag to True
+            self.subprocess_game = subprocess.Popen(
+                ['python', '/home/bmo/code/BMO-Game.py'])
         elif selected in self.menus:
             self.current_menu = selected
             self.current_selection = 'Back'
         elif selected == 'Back':
+            self.current_selection = self.current_menu
             self.current_menu = self.menus[self.current_menu]['parent']
-            self.current_selection = 'Screensaver'
         elif selected == 'Exit':
             self.root.destroy()
         elif self.current_menu == 'Video Player':
@@ -178,6 +195,12 @@ class App:
         window_width = self.root.winfo_width()
         window_height = self.root.winfo_height()
         print("Window dimensions: {}x{}".format(window_width, window_height))
+
+    def check_game_status(self):
+        if self.game_running and self.subprocess_game.poll() is not None:
+            self.game_running = False
+        # Schedule the next check
+        self.root.after(1000, self.check_game_status)
 
 
 app = App()
